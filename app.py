@@ -107,7 +107,10 @@ st.sidebar.title("Stock Control Panel")
 json_files = [f for f in os.listdir() if f.endswith('.json')]
 
 st.sidebar.subheader("Load Symbols from JSON:")
-selected_json = st.sidebar.selectbox("Select JSON file", ["None"] + json_files)
+# Modified to set "ark.json" as default if it exists in the list
+default_json_index = json_files.index("ark.json") if "ark.json" in json_files else 0
+selected_json = st.sidebar.selectbox("Select JSON file", ["None"] + json_files, 
+                                   index=default_json_index + 1 if "ark.json" in json_files else 0)
 
 # User can also add a single symbol
 user_symbol = st.sidebar.text_input("Quick Symbol Search", "")
@@ -115,9 +118,6 @@ user_symbol = st.sidebar.text_input("Quick Symbol Search", "")
 # Period selection
 period_options = {"1 Month": "1mo", "3 Months": "3mo", "6 Months": "6mo", "1 Year": "1y"}
 chosen_period = st.sidebar.selectbox("Select Data Period", list(period_options.keys()))
-
-# Chart type selection
-chart_type = st.sidebar.selectbox("Chart Type", ["Candlestick", "Line"])
 
 # Threshold for near-high check (only shown when using JSON files)
 if selected_json != "None":
@@ -220,10 +220,11 @@ elif user_symbol.strip():
 if filtered_results:
     # Update the header display logic
     if selected_json != "None":
-        st.success(
-            f"Found {len(filtered_results)} symbol(s) within {threshold}% of their highest price "
-            f"over the last {chosen_period}."
-        )
+        # st.success(
+        #     f"Found {len(filtered_results)} symbol(s) within {threshold}% of their highest price "
+        #     f"over the last {chosen_period}."
+        # )
+        pass
     else:  # Single symbol case
         st.subheader(f"Stock Data for {user_symbol.strip().upper()}")
 
@@ -254,144 +255,88 @@ if filtered_results:
             
             with col2:
                 st.write("**Price Chart**")
-                if chart_type == "Candlestick":
-                    # Calculate indicators
-                    if show_rsi:
-                        rsi = calculate_rsi(data, rsi_period)
-                        rsi_plot = mpf.make_addplot(rsi, panel=2, ylabel='RSI',
-                                                   ylim=(0, 100),
-                                                   secondary_y=False,
-                                                   color='#6236FF')  # Modern purple for RSI
-                        
-                        overbought = pd.Series(70, index=data.index)
-                        oversold = pd.Series(30, index=data.index)
-                        ob_plot = mpf.make_addplot(overbought, panel=2, color='#FF6B6B', linestyle='--', secondary_y=False)
-                        os_plot = mpf.make_addplot(oversold, panel=2, color='#4CAF50', linestyle='--', secondary_y=False)
+                # Calculate indicators
+                if show_rsi:
+                    rsi = calculate_rsi(data, rsi_period)
+                    rsi_plot = mpf.make_addplot(rsi, panel=2, ylabel='RSI',
+                                               ylim=(0, 100),
+                                               secondary_y=False,
+                                               color='#6236FF')  # Modern purple for RSI
                     
-                    if show_ema:
-                        ema = calculate_ema(data, ema_period)
-                        ema_plot = mpf.make_addplot(ema, color='#2196F3')  # Modern blue for EMA
-                    
-                    # Prepare addplots
-                    addplots = []
-                    if show_ema:
-                        addplots.append(ema_plot)
-                    if show_rsi:
-                        addplots.extend([rsi_plot, ob_plot, os_plot])
-                    
-                    # Create custom style with modern colors
-                    mc = mpf.make_marketcolors(
-                        up='#00C853',      # Fresh green for up candles
-                        down='#FF5252',    # Coral red for down candles
-                        edge={'up': '#00C853', 'down': '#FF5252'},
-                        wick={'up': '#00C853', 'down': '#FF5252'},
-                        volume={'up': '#B9F6CA', 'down': '#FFCDD2'},  # Lighter shades for volume
-                    )
-                    
-                    s = mpf.make_mpf_style(
-                        marketcolors=mc,
-                        gridstyle=':',
-                        gridcolor='#E0E0E0',  # Light grey grid
-                        facecolor='#FFFFFF',  # White background
-                        edgecolor='#FFFFFF',  # White edge
-                        figcolor='#FFFFFF',   # White figure background
-                        gridaxis='both',
-                        rc={'axes.labelcolor': '#666666',  # Dark grey labels
-                            'xtick.color': '#666666',      # Dark grey ticks
-                            'ytick.color': '#666666'}      # Dark grey ticks
-                    )
-                    
-                    # Update plot configuration
-                    fig, ax = mpf.plot(
-                        data,
-                        type='candle',
-                        style=s,
-                        volume=True,
-                        addplot=addplots if addplots else None,
-                        returnfig=True,
-                        figscale=1.8,
-                        datetime_format='%Y-%m-%d',
-                        panel_ratios=(6,2,2) if show_rsi else (6,2),
-                        tight_layout=True,
-                        figratio=(16,9),
-                        volume_panel=1,
-                        show_nontrading=False
-                    )
-                    
-                    # Adjust layout
-                    plt.subplots_adjust(hspace=0.3)
-                    
-                    st.pyplot(fig)
-                else:
-                    # Calculate indicators for line chart
-                    chart_data = data.reset_index()
-                    
-                    # Create base chart
-                    base = alt.Chart(chart_data).encode(x='Date:T')
-                    
-                    # Price chart
-                    price_line = base.mark_line(color='blue').encode(
-                        y=alt.Y('Close:Q', 
-                               title='Price',
-                               scale=alt.Scale(zero=False)),
-                        tooltip=['Date:T', 'Close:Q']
-                    )
-                    
-                    # Add EMA if enabled
-                    if show_ema:
-                        ema_values = calculate_ema(data, ema_period)
-                        chart_data['EMA'] = ema_values.values  # Convert Series to numpy array
-                        ema_line = base.mark_line(color='orange').encode(
-                            y=alt.Y('EMA:Q',
-                                   scale=alt.Scale(zero=False)),
-                            tooltip=['Date:T', 'EMA:Q']
-                        )
-                        price_plot = alt.layer(price_line, ema_line).properties(
-                            title='Price and EMA',
-                            height=400
-                        )
-                    else:
-                        price_plot = price_line.properties(
-                            title='Price',
-                            height=400
-                        )
-
-                    # Add RSI if enabled
-                    if show_rsi:
-                        rsi_values = calculate_rsi(data, rsi_period)
-                        chart_data['RSI'] = rsi_values.values  # Convert Series to numpy array
-                        
-                        # Create RSI chart
-                        rsi_chart = base.mark_line(color='purple').encode(
-                            y=alt.Y('RSI:Q',
-                                   title='RSI',
-                                   scale=alt.Scale(domain=[0, 100])),
-                            tooltip=['Date:T', 'RSI:Q']
-                        )
-                        
-                        # Add RSI reference lines
-                        rsi_70 = alt.Chart(pd.DataFrame({'y': [70]})).mark_rule(
-                            strokeDash=[2, 2],
-                            color='red'
-                        ).encode(y='y')
-                        
-                        rsi_30 = alt.Chart(pd.DataFrame({'y': [30]})).mark_rule(
-                            strokeDash=[2, 2],
-                            color='green'
-                        ).encode(y='y')
-                        
-                        rsi_plot = alt.layer(rsi_chart, rsi_70, rsi_30).properties(
-                            title='RSI',
-                            height=200
-                        )
-                        
-                        # Combine all charts vertically
-                        final_chart = alt.vconcat(price_plot, rsi_plot)
-                    else:
-                        final_chart = price_plot
-                    
-                    # Display the chart
-                    st.altair_chart(final_chart, use_container_width=True)
+                    overbought = pd.Series(70, index=data.index)
+                    oversold = pd.Series(30, index=data.index)
+                    ob_plot = mpf.make_addplot(overbought, panel=2, color='#FF6B6B', linestyle='--', secondary_y=False)
+                    os_plot = mpf.make_addplot(oversold, panel=2, color='#4CAF50', linestyle='--', secondary_y=False)
+                
+                if show_ema:
+                    ema = calculate_ema(data, ema_period)
+                    ema_plot = mpf.make_addplot(ema, color='#2196F3')
+                
+                # Prepare addplots
+                addplots = []
+                if show_ema:
+                    addplots.append(ema_plot)
+                if show_rsi:
+                    addplots.extend([rsi_plot, ob_plot, os_plot])
+                
+                # Create custom style with modern colors
+                mc = mpf.make_marketcolors(
+                    # up='#FFB74D',      # Orange/yellow for up candles
+                    # down='#42A5F5',    # Blue for down candles
+                    # edge={'up': '#FFA726', 'down': '#1E88E5'},
+                    # wick={'up': '#FFA726', 'down': '#1E88E5'},
+                    up='#42A5F5',      # Orange/yellow for up candles
+                    down='#FFB74D',    # Blue for down candles
+                    edge={'up': '#1E88E5', 'down': '#FFA726'},
+                    wick={'up': '#1E88E5', 'down': '#FFA726'},
+                    volume={'up': '#FFE0B2', 'down': '#BBDEFB'},  # Lighter shades for volume
+                )
+                
+                s = mpf.make_mpf_style(
+                    marketcolors=mc,
+                    gridstyle='',      # Remove grid
+                    gridcolor='#0A192F',  # Set grid color same as background to hide it
+                    facecolor='white',  # White background
+                    edgecolor='white',
+                    figcolor='white',
+                    rc={
+                        'axes.labelcolor': '#333333',
+                        'xtick.color': '#333333',
+                        'ytick.color': '#333333',
+                        'axes.facecolor': 'white'
+                    }
+                )
+                
+                # Update plot configuration
+                fig, ax = mpf.plot(
+                    data,
+                    type='candle',
+                    style=s,
+                    volume=True,
+                    addplot=addplots if addplots else None,
+                    returnfig=True,
+                    figscale=1.8,
+                    datetime_format='%Y-%m-%d',
+                    panel_ratios=(6,2,2) if show_rsi else (6,2),
+                    tight_layout=True,
+                    figratio=(16,9),
+                    volume_panel=1,
+                    show_nontrading=False,
+                    fill_between=dict(y1=data['Low'].values, y2=data['High'].values, alpha=0.1)  # Add subtle fill
+                )
+                
+                # Add this right after the plot to adjust the figure background
+                plt.gcf().patch.set_facecolor('white')
+                for ax in plt.gcf().axes:
+                    ax.set_facecolor('white')
+                    # Remove spines
+                    for spine in ax.spines.values():
+                        spine.set_visible(False)
+                
+                # Adjust layout
+                plt.subplots_adjust(hspace=0.3)
+                
+                st.pyplot(fig)
 else:
     if selected_json != "None":
         st.info(
