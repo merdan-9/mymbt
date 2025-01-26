@@ -1,5 +1,6 @@
-streamlit
-pandas
-yfinance
-openai
-mplfinance
+streamlit>=1.31.0
+pandas>=2.2.0
+yfinance>=0.2.36
+openai>=1.12.0
+mplfinance>=0.12.10b0
+matplotlib>=3.8.0

@@ -19,8 +19,23 @@ def calculate_ema(data, span=20):
     return data['Close'].ewm(span=span, adjust=False).mean()
 
 def is_near_high(data, threshold_percent=1.0):
-    """Check if current price is within threshold_percent of the highest price"""
+    """
+    Check if the current price is near the period high.
+    
+    Args:
+        data (pd.DataFrame): Stock data
+        threshold_percent (float): Threshold percentage
+    
+    Returns:
+        tuple: (is_near, diff_percent, period_high)
+    """
+    if data.empty:
+        return False, 0, 0
+        
     current_price = data['Close'].iloc[-1]
     period_high = data['High'].max()
-    price_diff_percent = ((period_high - current_price) / period_high) * 100
-    return price_diff_percent <= threshold_percent, price_diff_percent, period_high 
+    
+    diff_percent = ((period_high - current_price) / period_high) * 100
+    is_near = diff_percent <= threshold_percent
+    
+    return is_near, diff_percent, period_high 

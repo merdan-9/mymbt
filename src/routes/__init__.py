@@ -1,0 +1,1 @@
+"""Routes package for handling different views in the application.""" 

@@ -3,27 +3,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from .indicators import calculate_rsi, calculate_ema
 
-def create_stock_plot(data, show_rsi=True, show_ema=True, rsi_period=14, ema_period=20):
+def create_stock_plot(data, show_ema=True):
     """Create the stock chart with indicators"""
     addplots = []
     
-    if show_rsi:
-        rsi = calculate_rsi(data, rsi_period)
-        rsi_plot = mpf.make_addplot(rsi, panel=2, ylabel='RSI',
-                                   ylim=(0, 100),
-                                   secondary_y=False,
-                                   color='#6236FF')
-        
-        overbought = pd.Series(70, index=data.index)
-        oversold = pd.Series(30, index=data.index)
-        ob_plot = mpf.make_addplot(overbought, panel=2, color='#FF6B6B', linestyle='--', secondary_y=False)
-        os_plot = mpf.make_addplot(oversold, panel=2, color='#4CAF50', linestyle='--', secondary_y=False)
-        addplots.extend([rsi_plot, ob_plot, os_plot])
-    
     if show_ema:
-        ema = calculate_ema(data, ema_period)
-        ema_plot = mpf.make_addplot(ema, color='#2196F3')
-        addplots.append(ema_plot)
+        ema3 = calculate_ema(data, span=3)
+        ema5 = calculate_ema(data, span=5)
+        current_ema3 = ema3.iloc[-1]
+        current_ema5 = ema5.iloc[-1]
+        ema3_plot = mpf.make_addplot(ema3, color='#2196F3', label=f'EMA(3): ${current_ema3:.2f}')
+        ema5_plot = mpf.make_addplot(ema5, color='#4CAF50', label=f'EMA(5): ${current_ema5:.2f}')
+        addplots.extend([ema3_plot, ema5_plot])
     
     # Create custom style
     mc = mpf.make_marketcolors(
@@ -58,7 +49,7 @@ def create_stock_plot(data, show_rsi=True, show_ema=True, rsi_period=14, ema_per
         returnfig=True,
         figscale=1.8,
         datetime_format='%Y-%m-%d',
-        panel_ratios=(6,2,2) if show_rsi else (6,2),
+        panel_ratios=(6,2),
         tight_layout=True,
         figratio=(16,9),
         volume_panel=1,
