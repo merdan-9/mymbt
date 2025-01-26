@@ -1,96 +1,77 @@
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import mplfinance as mpf
 import pandas as pd
+import matplotlib.pyplot as plt
 from .indicators import calculate_rsi, calculate_ema
 
 def create_stock_plot(data, show_rsi=True, show_ema=True, rsi_period=14, ema_period=20):
-    """Create an interactive stock plot using plotly"""
-    # Calculate RSI and EMA if needed
+    """Create the stock chart with indicators"""
+    addplots = []
+    
     if show_rsi:
-        delta = data['Close'].diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=rsi_period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=rsi_period).mean()
-        rs = gain / loss
-        rsi = 100 - (100 / (1 + rs))
+        rsi = calculate_rsi(data, rsi_period)
+        rsi_plot = mpf.make_addplot(rsi, panel=2, ylabel='RSI',
+                                   ylim=(0, 100),
+                                   secondary_y=False,
+                                   color='#6236FF')
+        
+        overbought = pd.Series(70, index=data.index)
+        oversold = pd.Series(30, index=data.index)
+        ob_plot = mpf.make_addplot(overbought, panel=2, color='#FF6B6B', linestyle='--', secondary_y=False)
+        os_plot = mpf.make_addplot(oversold, panel=2, color='#4CAF50', linestyle='--', secondary_y=False)
+        addplots.extend([rsi_plot, ob_plot, os_plot])
     
     if show_ema:
-        ema = data['Close'].ewm(span=ema_period, adjust=False).mean()
-
-    # Create figure with secondary y-axis
-    fig = make_subplots(
-        rows=3 if show_rsi else 2,
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.05,
-        row_heights=[0.6, 0.2] if not show_rsi else [0.5, 0.2, 0.2],
-        subplot_titles=('Price', 'Volume', 'RSI') if show_rsi else ('Price', 'Volume')
+        ema = calculate_ema(data, ema_period)
+        ema_plot = mpf.make_addplot(ema, color='#2196F3')
+        addplots.append(ema_plot)
+    
+    # Create custom style
+    mc = mpf.make_marketcolors(
+        up='#42A5F5',
+        down='#FFB74D',
+        edge={'up': '#1E88E5', 'down': '#FFA726'},
+        wick={'up': '#1E88E5', 'down': '#FFA726'},
+        volume={'up': '#FFE0B2', 'down': '#BBDEFB'},
     )
-
-    # Add candlestick chart
-    fig.add_trace(
-        go.Candlestick(
-            x=data.index,
-            open=data['Open'],
-            high=data['High'],
-            low=data['Low'],
-            close=data['Close'],
-            name='OHLC'
-        ),
-        row=1, col=1
+    
+    s = mpf.make_mpf_style(
+        marketcolors=mc,
+        gridstyle='',
+        gridcolor='#0A192F',
+        facecolor='white',
+        edgecolor='white',
+        figcolor='white',
+        rc={
+            'axes.labelcolor': '#333333',
+            'xtick.color': '#333333',
+            'ytick.color': '#333333',
+            'axes.facecolor': 'white'
+        }
     )
-
-    # Add EMA if requested
-    if show_ema:
-        fig.add_trace(
-            go.Scatter(
-                x=data.index,
-                y=ema,
-                name=f'EMA {ema_period}',
-                line=dict(color='orange')
-            ),
-            row=1, col=1
-        )
-
-    # Add volume bars
-    fig.add_trace(
-        go.Bar(
-            x=data.index,
-            y=data['Volume'],
-            name='Volume',
-            marker_color='rgba(100,100,100,0.5)'
-        ),
-        row=2, col=1
+    
+    fig, ax = mpf.plot(
+        data,
+        type='candle',
+        style=s,
+        volume=True,
+        addplot=addplots if addplots else None,
+        returnfig=True,
+        figscale=1.8,
+        datetime_format='%Y-%m-%d',
+        panel_ratios=(6,2,2) if show_rsi else (6,2),
+        tight_layout=True,
+        figratio=(16,9),
+        volume_panel=1,
+        show_nontrading=False,
+        fill_between=dict(y1=data['Low'].values, y2=data['High'].values, alpha=0.1)
     )
-
-    # Add RSI if requested
-    if show_rsi:
-        fig.add_trace(
-            go.Scatter(
-                x=data.index,
-                y=rsi,
-                name='RSI',
-                line=dict(color='purple')
-            ),
-            row=3, col=1
-        )
-        
-        # Add RSI levels
-        fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
-        fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
-
-    # Update layout
-    fig.update_layout(
-        xaxis_rangeslider_visible=False,
-        height=800,
-        showlegend=True,
-        title_text="Interactive Stock Chart",
-        template="plotly_white",
-    )
-
-    # Update y-axes labels
-    fig.update_yaxes(title_text="Price", row=1, col=1)
-    fig.update_yaxes(title_text="Volume", row=2, col=1)
-    if show_rsi:
-        fig.update_yaxes(title_text="RSI", row=3, col=1)
-
+    
+    plt.gcf().patch.set_facecolor('white')
+    for ax in plt.gcf().axes:
+        ax.set_facecolor('white')
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+    
+    plt.subplots_adjust(hspace=0.3)
+    
     return fig 

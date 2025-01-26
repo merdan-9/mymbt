@@ -4,7 +4,6 @@ from src.config import setup_page_config, apply_style
 from src.data_loader import get_stock_data, load_json_file, clean_stock_data
 from src.indicators import is_near_high
 from src.plotting import create_stock_plot
-import openai
 from openai import OpenAI
 
 # Setup page configuration and styling
@@ -297,8 +296,7 @@ if filtered_results:
             with col2:
                 st.write("**Price Chart**")
                 fig = create_stock_plot(data, show_rsi, show_ema, rsi_period, ema_period)
-                # st.pyplot(fig)
-                st.plotly_chart(fig, use_container_width=True)
+                st.pyplot(fig)
 else:
     if selected_json != "None":
         st.info(f"No symbols found within {threshold}% of their highest price over the last {chosen_period}.")
