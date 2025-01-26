@@ -5,3 +5,4 @@ openai>=1.12.0
 mplfinance>=0.12.10b0
 matplotlib>=3.8.0
 ccxt==4.1.87
+plotly>=5.24.1
