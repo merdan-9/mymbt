@@ -93,7 +93,27 @@ ema_period = st.sidebar.number_input("EMA Period", min_value=1, value=20)
 # Process symbols and display results
 filtered_results = []
 
-if selected_json != "None":
+if user_symbol.strip():
+    # If there's a Quick Symbol Search, prioritize it over JSON file search
+    symbol = user_symbol.strip().upper()
+    try:
+        data = get_stock_data(symbol, period=period_options[chosen_period])
+        if not data.empty:
+            data = clean_stock_data(data)
+            if not data.empty:
+                filtered_results = [{  # Reset filtered_results to only contain this symbol
+                    'symbol': symbol,
+                    'data': data,
+                    'current_price': data['Close'].iloc[-1],
+                    'period_high': data['High'].max(),
+                    'period_low': data['Low'].min(),
+                    'average_volume': data['Volume'].mean(),
+                    'diff_percent': ((data['High'].max() - data['Close'].iloc[-1]) / data['High'].max()) * 100
+                }]
+    except Exception as e:
+        st.error(f"Error processing {symbol}: {str(e)}")
+
+elif selected_json != "None":
     symbols = load_json_file(selected_json)
     for symbol in symbols:
         try:
@@ -114,25 +134,6 @@ if selected_json != "None":
                         })
         except Exception as e:
             st.error(f"Error processing {symbol}: {str(e)}")
-
-elif user_symbol.strip():
-    symbol = user_symbol.strip().upper()
-    try:
-        data = get_stock_data(symbol, period=period_options[chosen_period])
-        if not data.empty:
-            data = clean_stock_data(data)
-            if not data.empty:
-                filtered_results.append({
-                    'symbol': symbol,
-                    'data': data,
-                    'current_price': data['Close'].iloc[-1],
-                    'period_high': data['High'].max(),
-                    'period_low': data['Low'].min(),
-                    'average_volume': data['Volume'].mean(),
-                    'diff_percent': ((data['High'].max() - data['Close'].iloc[-1]) / data['High'].max()) * 100
-                })
-    except Exception as e:
-        st.error(f"Error processing {symbol}: {str(e)}")
 
 # Display results
 if filtered_results:
@@ -296,7 +297,8 @@ if filtered_results:
             with col2:
                 st.write("**Price Chart**")
                 fig = create_stock_plot(data, show_rsi, show_ema, rsi_period, ema_period)
-                st.pyplot(fig)
+                # st.pyplot(fig)
+                st.plotly_chart(fig, use_container_width=True)
 else:
     if selected_json != "None":
         st.info(f"No symbols found within {threshold}% of their highest price over the last {chosen_period}.")
