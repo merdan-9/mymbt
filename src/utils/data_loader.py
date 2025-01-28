@@ -48,18 +48,18 @@ def load_json_file(filename):
     Load symbols from a JSON file.
     
     Args:
-        filename (str): Name of the JSON file
-    
+        filename (str): Path to the JSON file, relative to the data directory
+        
     Returns:
-        list: List of stock symbols
+        list: List of symbols from the file
     """
     try:
         with open(filename, 'r') as f:
             data = json.load(f)
-            if isinstance(data, list):
-                return data
-            elif isinstance(data, dict) and 'symbols' in data:
-                return data['symbols']
-            return []
-    except Exception:
+            return data.get('symbols', [])
+    except FileNotFoundError:
+        print(f"File {filename} not found")
+        return []
+    except json.JSONDecodeError:
+        print(f"Error reading {filename}")
         return [] 

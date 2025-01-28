@@ -10,14 +10,14 @@ import time
 def load_crypto_symbols():
     """Load cryptocurrency symbols from crypto.json file."""
     try:
-        with open('crypto.json', 'r') as f:
+        with open('data/crypto/crypto.json', 'r') as f:
             data = json.load(f)
             return data.get('symbols', [])
     except FileNotFoundError:
-        print("crypto.json file not found")
+        print("data/crypto/crypto.json file not found")
         return []
     except json.JSONDecodeError:
-        print("Error reading crypto.json file")
+        print("Error reading data/crypto/crypto.json file")
         return []
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes

@@ -4,30 +4,32 @@ from src.utils.indicators import is_near_high
 class StockService:
     def __init__(self):
         self.period_options = {
-            "1 Month": "1mo",
-            "3 Months": "3mo",
-            "6 Months": "6mo",
-            "1 Year": "1y"
+            "1mo": "1 Month",
+            "3mo": "3 Months",
+            "6mo": "6 Months",
+            "1y": "1 Year"
         }
 
     def get_stock_info(self, symbol, period):
         try:
-            data = get_stock_data(symbol, period=self.period_options[period])
+            data = get_stock_data(symbol, period=period)
             if data.empty:
                 return None
                 
             data = clean_stock_data(data)
             if data.empty:
                 return None
+            
+            _, diff_percent, period_high = is_near_high(data)
                 
             return {
                 'symbol': symbol,
                 'data': data,
                 'current_price': data['Close'].iloc[-1],
-                'period_high': data['High'].max(),
+                'period_high': period_high,
                 'period_low': data['Low'].min(),
                 'average_volume': data['Volume'].mean(),
-                'diff_percent': ((data['High'].max() - data['Close'].iloc[-1]) / data['High'].max()) * 100
+                'diff_percent': diff_percent
             }
         except Exception:
             return None
@@ -36,7 +38,7 @@ class StockService:
         filtered_results = []
         for symbol in symbols:
             try:
-                data = get_stock_data(symbol, period=self.period_options[period])
+                data = get_stock_data(symbol, period=period)
                 if not data.empty:
                     data = clean_stock_data(data)
                     if not data.empty:

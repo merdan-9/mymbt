@@ -57,15 +57,19 @@ def setup_custom_style():
     """, unsafe_allow_html=True)
 
 def create_main_layout():
-    st.title("Asset Market Analysis")
-    col1, col2 = st.columns(2)
+    """Create the main layout of the application."""
+    st.title("Market Analysis Dashboard")
+    
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        stocks_selected = st.button("STOCKS")
+        stocks_selected = st.button("📈 Stocks")
     with col2:
-        crypto_selected = st.button("CRYPTO")
+        crypto_selected = st.button("🪙 Crypto")
+    with col3:
+        holdings_selected = st.button("💼 My Holdings")
     
-    return stocks_selected, crypto_selected
+    return stocks_selected, crypto_selected, holdings_selected
 
 def display_metric(label, value):
     st.markdown(f"""

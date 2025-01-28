@@ -3,6 +3,7 @@ from src.app_factory import init_app
 from src.routes.home_routes import handle_home_view
 from src.routes.stock_routes import handle_stock_view
 from src.routes.crypto_routes import handle_crypto_view
+from src.routes.holdings_routes import handle_holdings_view
 
 def main():
     """Main application entry point."""
@@ -14,6 +15,8 @@ def main():
         handle_stock_view()
     elif st.session_state.view == 'crypto':
         handle_crypto_view()
+    elif st.session_state.view == 'holdings':
+        handle_holdings_view()
     else:
         handle_home_view()
 

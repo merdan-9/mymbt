@@ -35,7 +35,7 @@ def is_near_high(data, threshold_percent=1.0):
     current_price = data['Close'].iloc[-1]
     period_high = data['High'].max()
     
-    diff_percent = ((period_high - current_price) / period_high) * 100
+    diff_percent = abs((period_high - current_price) / period_high) * 100
     is_near = diff_percent <= threshold_percent
     
     return is_near, diff_percent, period_high 
