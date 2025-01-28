@@ -58,7 +58,7 @@ def setup_custom_style():
 
 def create_main_layout():
     """Create the main layout of the application."""
-    st.title("Market Analysis Dashboard")
+    st.title("MBT Trading")
     
     col1, col2, col3 = st.columns(3)
     

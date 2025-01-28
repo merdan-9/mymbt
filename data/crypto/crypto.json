@@ -1,21 +1,21 @@
 {
   "symbols": [
-    "BTC/USDC",
-    "ETH/USDC",
-    "XRP/USDC",
-    "SOL/USDC",
-    "DOGE/USDC",
-    "SUI/USDC",
-    "XLM/USDC",
-    "LINK/USDC",
-    "AVAX/USDC",
-    "LTC/USDC",
-    "AAVE/USDC",
-    "ADA/USDC",
-    "FIL/USDC",
-    "CRV/USDC",
-    "APT/USDC",
-    "NEAR/USDC",
-    "ENA/USDC"
+    "BTC-USD",
+    "ETH-USD",
+    "XRP-USD",
+    "SOL-USD",
+    "DOGE-USD",
+    // "SUI-USD",
+    "XLM-USD",
+    "LINK-USD",
+    "AVAX-USD",
+    "LTC-USD",
+    "AAVE-USD",
+    "ADA-USD",
+    "FIL-USD",
+    "CRV-USD",
+    "APT-USD",
+    "NEAR-USD",
+    "ENA-USD"
   ]
 }

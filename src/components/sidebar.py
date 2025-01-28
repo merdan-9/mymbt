@@ -1,10 +1,18 @@
 import os
 import streamlit as st
 from src.utils.data_loader import load_json_file
+from src.services.crypto_service import load_crypto_symbols
 
 class Sidebar:
     def __init__(self):
-        self.period_options = {
+        self.stock_period_options = {
+            "1mo": "1 Month",
+            "3mo": "3 Months",
+            "6mo": "6 Months",
+            "1y": "1 Year"
+        }
+        self.crypto_period_options = {
+            "5d": "5 Days",
             "1mo": "1 Month",
             "3mo": "3 Months",
             "6mo": "6 Months",
@@ -41,7 +49,7 @@ class Sidebar:
 
         # Stock controls
         user_symbol = st.sidebar.text_input("Quick Symbol Search", "")
-        chosen_period = st.sidebar.selectbox("Select Data Period", list(self.period_options.keys()))
+        chosen_period = st.sidebar.selectbox("Select Data Period", list(self.stock_period_options.keys()))
         
         threshold = None
         if selected_json != "None":
@@ -51,6 +59,37 @@ class Sidebar:
             'user_symbol': user_symbol,
             'chosen_period': chosen_period,
             'threshold': threshold,
+            'show_ema': True,
+            'symbols': symbols
+        }
+        
+    def render_crypto_controls(self):
+        """Render the sidebar with navigation and cryptocurrency controls."""
+        st.sidebar.title("Crypto Controls")
+        
+        # Load crypto symbols
+        symbols = load_crypto_symbols()
+        
+        # Initialize session state for symbols if not exists
+        if 'crypto_symbols' not in st.session_state:
+            st.session_state.crypto_symbols = symbols
+            
+        # Crypto controls
+        user_symbol = st.sidebar.text_input("Quick Symbol Search (e.g., BTC, ETH)", "")
+        chosen_period = st.sidebar.selectbox("Select Data Period", list(self.crypto_period_options.keys()))
+        
+        # Filter type selection
+        filter_type = st.sidebar.radio("Filter Type", ["High", "Low"], horizontal=True)
+        
+        # Threshold label changes based on filter type
+        threshold_label = "Price-to-High Threshold (%)" if filter_type == "High" else "Price-to-Low Threshold (%)"
+        threshold = st.sidebar.slider(threshold_label, 0.0, 5.0, 1.0, 0.1)
+
+        return {
+            'user_symbol': user_symbol,
+            'chosen_period': chosen_period,
+            'threshold': threshold,
+            'filter_type': filter_type.lower(),
             'show_ema': True,
             'symbols': symbols
         } 
