@@ -3,27 +3,6 @@ import streamlit as st
 def setup_custom_style():
     st.markdown("""
     <style>
-    div.stButton > button {
-        width: 200px;
-        height: 120px;
-        background-color: #2196F3;
-        color: white;
-        border-radius: 10px;
-        font-size: 32px;
-        font-weight: bold;
-        margin: 20px auto;
-        border: none;
-    }
-
-    div.stButton > button:hover {
-        background-color: #1976D2;
-    }
-
-    div.stButton {
-        display: flex;
-        justify-content: center;
-    }
-
     /* Override primary button style for AI Analysis */
     div.stButton > button[kind="primary"] {
         background-color: #ff4b4b !important;
@@ -59,17 +38,6 @@ def setup_custom_style():
 def create_main_layout():
     """Create the main layout of the application."""
     st.title("MBT Trading")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        stocks_selected = st.button("📈 Stocks")
-    with col2:
-        crypto_selected = st.button("🪙 Crypto")
-    with col3:
-        holdings_selected = st.button("💼 My Holdings")
-    
-    return stocks_selected, crypto_selected, holdings_selected
 
 def display_metric(label, value):
     st.markdown(f"""
