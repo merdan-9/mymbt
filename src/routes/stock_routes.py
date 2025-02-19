@@ -12,11 +12,6 @@ def handle_stock_view():
     # Get sidebar controls
     controls = sidebar.render_stock_controls()
     
-    # Add a button to return to home
-    if st.sidebar.button("Return to Home"):
-        st.session_state.view = None
-        st.rerun()
-    
     # Process stock data
     filtered_results = []
     if controls['user_symbol'].strip():
