@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from .indicators import calculate_rsi, calculate_ema
 
-def create_stock_plot(data, show_ema=True):
+def create_stock_plot(data, show_ema=True, period='1mo'):
     """Create the stock chart with indicators"""
     # Create figure and axis
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 9), height_ratios=[3, 1], gridspec_kw={'hspace': 0.3})
@@ -19,12 +19,19 @@ def create_stock_plot(data, show_ema=True):
     high55 = data['High'].rolling(window=55).max()
     low10 = data['Low'].rolling(window=10).min()
     
-    # Get the display period (last N rows without the extra data for MA calculation)
-    display_data = data.iloc[-30:]  # Default to 1 month
-    if len(data) > 180:  # If we have 6mo+ data
-        display_data = data.iloc[-180:]
-    elif len(data) > 90:  # If we have 3mo+ data
-        display_data = data.iloc[-90:]
+    # Get the display period based on selected timeframe
+    if period == '1mo':
+        display_length = 30
+    elif period == '3mo':
+        display_length = 90
+    elif period == '6mo':
+        display_length = 180
+    else:  # Default to all available data
+        display_length = len(data)
+        
+    # Ensure we don't try to display more data than we have
+    display_length = min(display_length, len(data))
+    display_data = data.iloc[-display_length:]
     
     # Plot closing price for display period
     current_price = display_data['Close'].iloc[-1]
