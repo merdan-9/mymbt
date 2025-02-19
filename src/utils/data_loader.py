@@ -8,14 +8,26 @@ def get_stock_data(symbol, period='1mo'):
     
     Args:
         symbol (str): Stock symbol
-        period (str): Time period (e.g., '1mo', '3mo', '6mo', '1y')
+        period (str): Display period (e.g., '1mo', '3mo', '6mo', '1y')
     
     Returns:
-        pd.DataFrame: Stock data
+        pd.DataFrame: Stock data with enough history for indicators
     """
     try:
         ticker = yf.Ticker(symbol)
-        data = ticker.history(period=period)
+        # Always fetch 2 years of data to ensure enough history for indicators
+        data = ticker.history(period='2y')
+        
+        # Return appropriate amount of data based on period
+        if period == '1mo':
+            return data.tail(80)  # 30 days display + 50 days for MA calculation
+        elif period == '3mo':
+            return data.tail(140)  # 90 days display + 50 days for MA calculation
+        elif period == '6mo':
+            return data.tail(230)  # 180 days display + 50 days for MA calculation
+        else:  # 1y
+            return data.tail(365)  # Full year
+            
         return data
     except Exception:
         return pd.DataFrame()
