@@ -12,6 +12,7 @@ def create_stock_plot(data, show_ema=True):
     ema5 = calculate_ema(data, span=5)
     ma20 = data['Close'].rolling(window=20).mean()
     ma50 = data['Close'].rolling(window=50).mean()
+    rsi = calculate_rsi(data, periods=14)
     
     # Calculate rolling highs and lows
     high20 = data['High'].rolling(window=20).max()
@@ -26,7 +27,9 @@ def create_stock_plot(data, show_ema=True):
         display_data = data.iloc[-90:]
     
     # Plot closing price for display period
-    ax1.plot(display_data.index, display_data['Close'], color='#1976D2', linewidth=1.5, label='Close Price')
+    current_price = display_data['Close'].iloc[-1]
+    ax1.plot(display_data.index, display_data['Close'], color='#1976D2', linewidth=1.5, 
+            label=f'Close Price: ${current_price:.2f}')
     
     # Plot EMAs for display period
     if show_ema:
@@ -49,8 +52,15 @@ def create_stock_plot(data, show_ema=True):
     ax1.plot(display_data.index, low10.loc[display_data.index], color='#7CB342', linewidth=1, linestyle='--',
             label=f'10D Low: ${low10.iloc[-1]:.2f}')
     
-    # Plot volume for display period
-    ax2.bar(display_data.index, display_data['Volume'], color='#90CAF9', alpha=0.5, label='Volume')
+    # Plot RSI
+    ax2.plot(display_data.index, rsi.loc[display_data.index], color='#5C6BC0', linewidth=1.2, 
+            label=f'RSI(14): {rsi.iloc[-1]:.1f}')
+    
+    # Add overbought/oversold levels
+    ax2.axhline(y=80, color='#FF5252', linestyle='--', alpha=0.5)
+    ax2.axhline(y=50, color='#66BB6A', linestyle='--', alpha=0.5)
+    ax2.fill_between(display_data.index, 80, 100, color='#FF5252', alpha=0.1)
+    ax2.fill_between(display_data.index, 0, 50, color='#66BB6A', alpha=0.1)
     
     # Customize price chart
     ax1.set_title('Stock Price', pad=10)
@@ -58,10 +68,12 @@ def create_stock_plot(data, show_ema=True):
     ax1.legend(loc='upper left', ncol=2)  # Use 2 columns for legend to save space
     ax1.set_ylabel('Price ($)')
     
-    # Customize volume chart
-    ax2.set_title('Volume', pad=10)
+    # Customize RSI chart
+    ax2.set_title('RSI (14)', pad=10)
     ax2.grid(True, linestyle='--', alpha=0.3)
-    ax2.set_ylabel('Volume')
+    ax2.set_ylabel('RSI')
+    ax2.set_ylim(0, 100)
+    ax2.legend(loc='upper left')
     
     # Format dates on x-axis
     plt.gcf().autofmt_xdate()
