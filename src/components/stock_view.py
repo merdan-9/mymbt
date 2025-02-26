@@ -10,63 +10,18 @@ class StockView:
 
     def prepare_detailed_analysis_data(self, stock_info):
         symbol = stock_info['symbol']
-        data = stock_info['data']
         
-        # Get historical data for different periods
-        period_data = self.stock_service.get_period_data(symbol, ['1mo', '3mo', '6mo', '1y'])
-        
-        # Calculate EMAs for last month
-        ema_3 = data['Close'].ewm(span=3, adjust=False).mean()
-        ema_5 = data['Close'].ewm(span=5, adjust=False).mean()
-        ema_20 = data['Close'].ewm(span=20, adjust=False).mean()
-        ema_50 = data['Close'].ewm(span=50, adjust=False).mean()
-        ema_100 = data['Close'].ewm(span=100, adjust=False).mean()
-        ema_200 = data['Close'].ewm(span=200, adjust=False).mean()
-        
-        # Calculate Moving Averages
-        ma_30 = data['Close'].rolling(window=30).mean()
-        ma_60 = data['Close'].rolling(window=60).mean()
-        ma_120 = data['Close'].rolling(window=120).mean()
-        ma_240 = data['Close'].rolling(window=240).mean()
-        
-        # Get last 3 months of daily closing prices with dates
-        one_month_data = data.tail(30)
-        closing_prices_str = "\n".join([f"            {date.strftime('%Y-%m-%d')}: ${price:.2f}" 
-                                      for date, price in zip(one_month_data.index, one_month_data['Close'])])
-        
-        prompt = f"""Analyze the following detailed stock data for {symbol}:
-
-          1. Current Price Data:
-            - Current Price: ${stock_info['current_price']:.2f}
-            - Three Month Daily Closes:
-      {closing_prices_str}
-
-          2. Historical Price Ranges:
-            1 Month: High ${period_data['1mo']['high']:.2f}, Low ${period_data['1mo']['low']:.2f}
-            3 Months: High ${period_data['3mo']['high']:.2f}, Low ${period_data['3mo']['low']:.2f}
-            6 Months: High ${period_data['6mo']['high']:.2f}, Low ${period_data['6mo']['low']:.2f}
-            12 Months: High ${period_data['1y']['high']:.2f}, Low ${period_data['1y']['low']:.2f}
-
-          3. Technical Indicators:
-            EMA:
-            - EMA3: ${ema_3.iloc[-1]:.2f}
-            - EMA5: ${ema_5.iloc[-1]:.2f}
-            - EMA20: ${ema_20.iloc[-1]:.2f}
-            - EMA50: ${ema_50.iloc[-1]:.2f}
-            - EMA100: ${ema_100.iloc[-1]:.2f}
-            - EMA200: ${ema_200.iloc[-1]:.2f}
-            Moving Averages:
-            - MA30: ${ma_30.iloc[-1]:.2f}
-            - MA60: ${ma_60.iloc[-1]:.2f}
-            - MA120: ${ma_120.iloc[-1]:.2f}
-            - MA240: ${ma_240.iloc[-1]:.2f}
-
-          4. Volume Analysis:
-            Current Volume vs Average: {((stock_info['data']['Volume'].iloc[-1] - stock_info['average_volume']) / stock_info['average_volume'] * 100):.1f}%
-          """
+        prompt = f"""Give me a detailed analysis of {symbol}"""
         return prompt
 
     def display_stock_metrics(self, stock_info, controls):
+        # Display plot at the bottom
+        fig = create_stock_plot(
+            stock_info['data'],
+            show_ema=controls.get('show_ema', False)
+        )
+        st.pyplot(fig, use_container_width=True)
+
         # GPT Analysis button
         get_analysis = st.button("🤖 Ask GPT Analysis", key=f"ai_{stock_info['symbol']}", type="primary", use_container_width=True)
         if get_analysis:
@@ -92,13 +47,6 @@ class StockView:
                         st.markdown(f"<div style='color: #34495e; margin-left: 20px;'>{item}</div>", unsafe_allow_html=True)
                 elif section.strip():
                     st.markdown(f"<div style='color: #34495e;'>{section}</div>", unsafe_allow_html=True)
-
-        # Display plot at the bottom
-        fig = create_stock_plot(
-            stock_info['data'],
-            show_ema=controls.get('show_ema', False)
-        )
-        st.pyplot(fig, use_container_width=True)
 
     def display_stocks(self, filtered_results, controls):
         if not filtered_results:

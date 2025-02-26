@@ -10,13 +10,13 @@ def create_stock_plot(data, show_ema=True, period='1mo'):
     # Calculate all indicators on full dataset first
     ema3 = calculate_ema(data, span=3)
     ema5 = calculate_ema(data, span=5)
-    ma20 = data['Close'].rolling(window=20).mean()
-    ma50 = data['Close'].rolling(window=50).mean()
+    ema20 = calculate_ema(data, span=20)
+    ema50 = calculate_ema(data, span=50)
     rsi = calculate_rsi(data, periods=14)
     
     # Calculate rolling highs and lows
     high20 = data['High'].rolling(window=20).max()
-    high55 = data['High'].rolling(window=55).max()
+    high50 = data['High'].rolling(window=50).max()
     low10 = data['Low'].rolling(window=10).min()
     
     # Get the display period based on selected timeframe
@@ -39,23 +39,22 @@ def create_stock_plot(data, show_ema=True, period='1mo'):
             label=f'Close Price: ${current_price:.2f}')
     
     # Plot EMAs for display period
-    if show_ema:
-        ax1.plot(display_data.index, ema3.loc[display_data.index], color='#2196F3', linewidth=1.2, 
-                label=f'EMA3: ${ema3.iloc[-1]:.2f}')
-        ax1.plot(display_data.index, ema5.loc[display_data.index], color='#4CAF50', linewidth=1.2, 
-                label=f'EMA5: ${ema5.iloc[-1]:.2f}')
+    ax1.plot(display_data.index, ema3.loc[display_data.index], color='#2196F3', linewidth=1.2, 
+            label=f'EMA3: ${ema3.iloc[-1]:.2f}')
+    ax1.plot(display_data.index, ema5.loc[display_data.index], color='#4CAF50', linewidth=1.2, 
+            label=f'EMA5: ${ema5.iloc[-1]:.2f}')
     
     # Plot moving averages for display period
-    ax1.plot(display_data.index, ma20.loc[display_data.index], color='#FFA726', linewidth=1.2, 
-            label=f'MA20: ${ma20.iloc[-1]:.2f}')
-    ax1.plot(display_data.index, ma50.loc[display_data.index], color='#E64A19', linewidth=1.2, 
-            label=f'MA50: ${ma50.iloc[-1]:.2f}')
+    ax1.plot(display_data.index, ema20.loc[display_data.index], color='#FFA726', linewidth=1.2, 
+            label=f'EMA20: ${ema20.iloc[-1]:.2f}')
+    ax1.plot(display_data.index, ema50.loc[display_data.index], color='#E64A19', linewidth=1.2, 
+            label=f'EMA50: ${ema50.iloc[-1]:.2f}')
             
     # Plot rolling highs and lows
-    ax1.plot(display_data.index, high20.loc[display_data.index], color='#FF5252', linewidth=1, linestyle='--',
+    ax1.plot(display_data.index, high20.loc[display_data.index], color='#FFA726', linewidth=1, linestyle='--',
             label=f'20D High: ${high20.iloc[-1]:.2f}')
-    ax1.plot(display_data.index, high55.loc[display_data.index], color='#D32F2F', linewidth=1, linestyle='--',
-            label=f'55D High: ${high55.iloc[-1]:.2f}')
+    ax1.plot(display_data.index, high50.loc[display_data.index], color='#E64A19', linewidth=1, linestyle='--',
+            label=f'50D High: ${high50.iloc[-1]:.2f}')
     ax1.plot(display_data.index, low10.loc[display_data.index], color='#7CB342', linewidth=1, linestyle='--',
             label=f'10D Low: ${low10.iloc[-1]:.2f}')
     
