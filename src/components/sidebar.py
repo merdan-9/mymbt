@@ -10,9 +10,37 @@ class Sidebar:
             "6mo": "6 Months",
             "1y": "1 Year"
         }
+        
+        # Initialize navigation state if not exists
+        if 'current_view' not in st.session_state:
+            st.session_state.current_view = 'stocks'
+    
+    def render_navigation(self):
+        """Render the navigation menu in the sidebar."""
+        st.sidebar.title("Navigation")
+        
+        # Navigation buttons
+        col1, col2 = st.sidebar.columns(2)
+        
+        with col1:
+            if st.button("📊 Stocks", use_container_width=True, 
+                        type="primary" if st.session_state.current_view == 'stocks' else "secondary"):
+                st.session_state.current_view = 'stocks'
+                st.rerun()
+        
+        with col2:
+            if st.button("🔔 Alerts", use_container_width=True,
+                        type="primary" if st.session_state.current_view == 'alerts' else "secondary"):
+                st.session_state.current_view = 'alerts'
+                st.rerun()
+        
+        st.sidebar.markdown("---")
     
     def render_stock_controls(self):
         """Render the sidebar with navigation and stock controls."""
+        # Render navigation first
+        self.render_navigation()
+        
         st.sidebar.title("Stock Controls")
             
         # Load JSON files from root directory

@@ -1,147 +1,93 @@
 #!/usr/bin/env python3
 """
-DOGE-USD Price Monitor with WhatsApp Alerts
-This script monitors the DOGE-USD price every 5 minutes and sends WhatsApp alerts
-when the price reaches specified thresholds.
+Cryptocurrency Price Monitor with Terminal Alerts
+This script monitors cryptocurrency prices and displays alerts in the terminal when thresholds are reached.
 """
 
-import os
 import time
 import yfinance as yf
-from twilio.rest import Client
-from datetime import datetime
 import argparse
-import logging
-import streamlit as st
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('doge_monitor.log')
-    ]
-)
-logger = logging.getLogger(__name__)
+from symbols import SYMBOLS_TO_MONITOR
 
-class DogePriceMonitor:
-    def __init__(self, upper_threshold=None, lower_threshold=None, interval_minutes=5):
-        """
-        Initialize the DOGE price monitor.
-        
-        Args:
-            upper_threshold: Price above which to send an alert
-            lower_threshold: Price below which to send an alert
-            interval_minutes: How often to check the price (in minutes)
-        """
-        self.upper_threshold = upper_threshold
-        self.lower_threshold = lower_threshold
+class CryptoPriceMonitor:
+    def __init__(self, symbols_list=None, interval_minutes=5):
+        """Initialize the cryptocurrency price monitor."""
+        self.symbols_list = symbols_list or SYMBOLS_TO_MONITOR
         self.interval_minutes = interval_minutes
-        self.last_price = None
-        self.symbol = "DOGE-USD"
-        
-        # Twilio configuration
-        self.account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
-        self.auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
-        self.from_whatsapp_number = st.secrets["TWILIO_WHATSAPP_NUMBER"]
-        self.to_whatsapp_number = st.secrets["TO_WHATSAPP_NUMBER"]
-        
-        # Validate Twilio configuration
-        if not all([self.account_sid, self.auth_token, self.from_whatsapp_number, self.to_whatsapp_number]):
-            logger.warning("Twilio credentials not fully configured. WhatsApp alerts will not be sent.")
     
-    def get_current_price(self):
-        """Get the current price of DOGE-USD."""
-        try:
-            ticker = yf.Ticker(self.symbol)
-            data = ticker.history(period="1d")
-            if data.empty:
-                logger.error(f"No data returned for {self.symbol}")
-                return None
-            
-            current_price = data['Close'].iloc[-1]
-            logger.info(f"Current {self.symbol} price: ${current_price:.6f}")
-            return current_price
-        except Exception as e:
-            logger.error(f"Error fetching price data: {e}")
+    def get_current_price(self, symbol):
+        """Get the current price of a symbol."""
+        ticker = yf.Ticker(symbol)
+        data = ticker.history(period="1d")
+        
+        if data.empty:
             return None
-    
-    def send_whatsapp_alert(self, message):
-        """Send a WhatsApp alert using Twilio."""
-        if not all([self.account_sid, self.auth_token, self.from_whatsapp_number, self.to_whatsapp_number]):
-            logger.warning("Cannot send WhatsApp alert: Twilio credentials not configured")
-            return False
         
-        try:
-            client = Client(self.account_sid, self.auth_token)
-            message = client.messages.create(
-                body=message,
-                from_=f"whatsapp:{self.from_whatsapp_number}",
-                to=f"whatsapp:{self.to_whatsapp_number}"
-            )
-            logger.info(f"WhatsApp alert sent: {message.sid}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to send WhatsApp alert: {e}")
-            return False
+        current_price = data['Close'].iloc[-1]
+        print(f"Current {symbol} price: ${current_price:.6f}")
+        return current_price
     
-    def check_thresholds(self, current_price):
-        """Check if the current price has crossed any thresholds."""
-        if self.last_price is None:
-            self.last_price = current_price
-            return
-        
+    def send_terminal_alert(self, message):
+        """Display an alert in the terminal."""
+        print("\n" + "="*80)
+        print(f"ALERT: {message}")
+        print("="*80 + "\n")
+        return True
+    
+    def check_thresholds(self, symbol, current_price, upper_threshold, lower_threshold):
         alerts = []
         
         # Check upper threshold
-        if self.upper_threshold and current_price >= self.upper_threshold:
-            alerts.append(f"🚨 DOGE-USD ALERT: Price has reached ${current_price:.6f}, above your upper threshold of ${self.upper_threshold:.6f}")
+        if upper_threshold and current_price >= upper_threshold:
+            alerts.append(f"🚨 {symbol} ALERT: Price has reached ${current_price:.6f}, above your upper threshold of ${upper_threshold:.6f}")
         
         # Check lower threshold
-        if self.lower_threshold and current_price <= self.lower_threshold:
-            alerts.append(f"🚨 DOGE-USD ALERT: Price has dropped to ${current_price:.6f}, below your lower threshold of ${self.lower_threshold:.6f}")
+        if lower_threshold and current_price <= lower_threshold:
+            alerts.append(f"🚨 {symbol} ALERT: Price has dropped to ${current_price:.6f}, below your lower threshold of ${lower_threshold:.6f}")
         
         # Send alerts if any thresholds were crossed
         for alert in alerts:
-            self.send_whatsapp_alert(alert)
-        
-        self.last_price = current_price
+            self.send_terminal_alert(alert)
     
     def start_monitoring(self):
-        """Start the monitoring loop."""
-        logger.info(f"Starting DOGE-USD price monitor. Checking every {self.interval_minutes} minutes.")
-        logger.info(f"Upper threshold: ${self.upper_threshold if self.upper_threshold else 'Not set'}")
-        logger.info(f"Lower threshold: ${self.lower_threshold if self.lower_threshold else 'Not set'}")
+        """Start the monitoring loop for all symbols."""
+        print(f"Starting cryptocurrency price monitor for {len(self.symbols_list)} symbols. Checking every {self.interval_minutes} minutes.")
         
-        try:
-            while True:
-                current_price = self.get_current_price()
-                if current_price is not None:
-                    self.check_thresholds(current_price)
+        while True:
+            for symbol_data in self.symbols_list:
+                symbol = symbol_data["symbol"]
+                upper_threshold = symbol_data.get("upper_threshold")
+                lower_threshold = symbol_data.get("lower_threshold")
                 
-                # Sleep for the specified interval
-                logger.info(f"Sleeping for {self.interval_minutes} minutes until next check...")
-                time.sleep(self.interval_minutes * 60)
-        except KeyboardInterrupt:
-            logger.info("Monitoring stopped by user.")
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
+                current_price = self.get_current_price(symbol)
+                if current_price is not None:
+                    self.check_thresholds(symbol, current_price, upper_threshold, lower_threshold)
+            
+            # Sleep for the specified interval
+            print(f"Sleeping for {self.interval_minutes} minutes until next check...")
+            time.sleep(self.interval_minutes * 60)
 
 def main():
     """Parse command line arguments and start the monitor."""
-    parser = argparse.ArgumentParser(description='Monitor DOGE-USD price and send WhatsApp alerts.')
-    parser.add_argument('--upper', type=float, help='Upper price threshold for alerts')
-    parser.add_argument('--lower', type=float, help='Lower price threshold for alerts')
-    parser.add_argument('--interval', type=int, default=5, help='Check interval in minutes (default: 5)')
+    parser = argparse.ArgumentParser(description='Monitor cryptocurrency prices and display terminal alerts.')
+    parser.add_argument('--interval', type=int, default=10, help='Check interval in minutes (default: 10)')
+    parser.add_argument('--symbols-file', type=str, default=None, help='Path to a custom symbols configuration file')
     
     args = parser.parse_args()
     
-    if not args.upper and not args.lower:
-        logger.warning("No thresholds set. At least one threshold (--upper or --lower) should be specified.")
+    # Use default symbols from symbols.py
+    symbols_list = SYMBOLS_TO_MONITOR
     
-    monitor = DogePriceMonitor(
-        upper_threshold=args.upper,
-        lower_threshold=args.lower,
+    # If a custom symbols file is specified, load it
+    if args.symbols_file:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("custom_symbols", args.symbols_file)
+        custom_symbols = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(custom_symbols)
+        symbols_list = custom_symbols.SYMBOLS_TO_MONITOR
+    
+    monitor = CryptoPriceMonitor(
+        symbols_list=symbols_list,
         interval_minutes=args.interval
     )
     
