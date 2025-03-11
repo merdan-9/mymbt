@@ -20,7 +20,7 @@ class Sidebar:
         st.sidebar.title("Navigation")
         
         # Navigation buttons
-        col1, col2 = st.sidebar.columns(2)
+        col1, col2, col3 = st.sidebar.columns(3)
         
         with col1:
             if st.button("📊 Stocks", use_container_width=True, 
@@ -32,6 +32,12 @@ class Sidebar:
             if st.button("🔔 Alerts", use_container_width=True,
                         type="primary" if st.session_state.current_view == 'alerts' else "secondary"):
                 st.session_state.current_view = 'alerts'
+                st.rerun()
+        
+        with col3:
+            if st.button("🔮 Oracle", use_container_width=True,
+                        type="primary" if st.session_state.current_view == 'oracle' else "secondary"):
+                st.session_state.current_view = 'oracle'
                 st.rerun()
         
         st.sidebar.markdown("---")

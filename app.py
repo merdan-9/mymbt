@@ -2,6 +2,7 @@ import streamlit as st
 from src.app_factory import init_app
 from src.routes.stock_routes import handle_stock_view
 from src.routes.alert_routes import handle_alert_view
+from src.routes.oracle_routes import handle_oracle_view
 from src.services.alert_service import AlertService
 from src.services.price_monitor_service import PriceMonitorService
 from src.services.twilio_service import TwilioService
@@ -35,6 +36,8 @@ def main():
         handle_stock_view()
     elif st.session_state.current_view == 'alerts':
         handle_alert_view()
+    elif st.session_state.current_view == 'oracle':
+        handle_oracle_view()
 
 if __name__ == "__main__":
     main()
