@@ -42,7 +42,7 @@ class AlertView:
                     stock_info = self.stock_service.get_stock_info(symbol, "1d")
                     if stock_info:
                         current_price = stock_info['current_price']
-                        st.info(f"Current price of {symbol}: ${current_price:.2f}")
+                        st.info(f"Current price of {symbol}: ${current_price:.4f}")
                 except:
                     st.warning(f"Could not fetch current price for {symbol}")
             
@@ -52,19 +52,17 @@ class AlertView:
             # Price threshold input based on selected alert type
             if alert_type == "Upper Price Alert":
                 price_threshold = st.number_input(
-                    "Upper Price Threshold", 
-                    min_value=0.01, 
-                    step=0.01,
-                    value=current_price * 1.05 if current_price else 100.0,  # Default to 5% above current price
+                    "Upper Price Threshold",
+                    min_value=0.0001,
+                    format="%.4f",
                     help="Alert when price goes above this value",
                     key="upper_price_input"
                 )
             else:  # Lower Price Alert
                 price_threshold = st.number_input(
-                    "Lower Price Threshold", 
-                    min_value=0.01, 
-                    step=0.01,
-                    value=current_price * 0.95 if current_price else 100.0,  # Default to 5% below current price
+                    "Lower Price Threshold",
+                    min_value=0.0001,
+                    format="%.4f",
                     help="Alert when price goes below this value",
                     key="lower_price_input"
                 )
@@ -103,7 +101,7 @@ class AlertView:
                     st.session_state.price_monitor.check_interval = check_interval * 60  # Convert to seconds
                 
                 alert_type_display = "upper" if alert_type == "Upper Price Alert" else "lower"
-                st.success(f"{alert_type_display.capitalize()} price alert created for {symbol} at ${price_threshold:.2f}. Checking every {check_interval} minutes.")
+                st.success(f"{alert_type_display.capitalize()} price alert created for {symbol} at ${price_threshold:.4f}. Checking every {check_interval} minutes.")
                 return [alert]
         
         return None
