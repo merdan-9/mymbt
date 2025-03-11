@@ -1,59 +1,61 @@
 {
-    "active": [],
+    "active": [
+        {
+            "id": "b39131c4-e87f-42fa-b8e4-e21c0b9fa725",
+            "symbol": "BTC-USD",
+            "price_threshold": 85336.231640625,
+            "alert_type": "above",
+            "created_at": "2025-03-11T21:01:07.555954",
+            "triggered": false,
+            "triggered_at": null
+        },
+        {
+            "id": "bfbf6a7f-6871-40cb-81f5-a197aac229da",
+            "symbol": "BTC-USD",
+            "price_threshold": 76736.38359375,
+            "alert_type": "below",
+            "created_at": "2025-03-11T21:16:10.832606",
+            "triggered": false,
+            "triggered_at": null
+        },
+        {
+            "id": "01084cf2-0dbc-4ad3-8a8c-1c169c7cfec4",
+            "symbol": "BTC-USD",
+            "price_threshold": 1.0,
+            "alert_type": "below",
+            "created_at": "2025-03-11T21:16:14.341571",
+            "triggered": false,
+            "triggered_at": null
+        },
+        {
+            "id": "543405db-1b63-44d7-97e9-d0bbfb5efe24",
+            "symbol": "BTC-USD",
+            "price_threshold": 84936.837890625,
+            "alert_type": "above",
+            "created_at": "2025-03-11T21:17:40.934989",
+            "triggered": false,
+            "triggered_at": null
+        },
+        {
+            "id": "2ff4bbb1-d111-4be2-bc17-9f754e605e2f",
+            "symbol": "BTC-USD",
+            "price_threshold": 849.0,
+            "alert_type": "above",
+            "created_at": "2025-03-11T21:18:39.573439",
+            "triggered": false,
+            "triggered_at": null
+        }
+    ],
     "history": [
         {
-            "id": "07ddf194-f6b4-496b-b8c5-0ddc4eb918a4",
+            "id": "7b2a7a50-a4db-4a37-aa09-289de606ba27",
             "symbol": "BTC-USD",
-            "price_threshold": 83945.0,
-            "alert_type": "below",
-            "phone_number": null,
-            "created_at": "2025-03-04T19:43:57.559141",
-            "triggered": true,
-            "triggered_at": "2025-03-04T19:48:07.199948",
-            "triggered_price": 83885.9375
-        },
-        {
-            "id": "3114b7bb-25e7-460d-aada-0d835c8e035a",
-            "symbol": "BTC-USD",
-            "price_threshold": 83945.0,
-            "alert_type": "below",
-            "phone_number": null,
-            "created_at": "2025-03-04T19:44:54.513490",
-            "triggered": true,
-            "triggered_at": "2025-03-04T19:48:07.202842",
-            "triggered_price": 83885.9375
-        },
-        {
-            "id": "e1eefd79-5c91-4ee2-ac57-cd1695fd96b4",
-            "symbol": "BTC-USD",
-            "price_threshold": 12123.0,
+            "price_threshold": 849.0,
             "alert_type": "above",
-            "phone_number": null,
-            "created_at": "2025-03-04T19:51:15.648266",
+            "created_at": "2025-03-11T21:17:45.646028",
             "triggered": true,
-            "triggered_at": "2025-03-04T19:52:23.702946",
-            "triggered_price": 83911.359375
-        },
-        {
-            "id": "56dddedb-a028-4f94-907f-1b7142dce3b1",
-            "symbol": "BTC-USD",
-            "price_threshold": 83950.0,
-            "alert_type": "above",
-            "phone_number": null,
-            "created_at": "2025-03-04T19:43:57.558615",
-            "triggered": true,
-            "triggered_at": "2025-03-04T19:55:05.500543",
-            "triggered_price": 84004.96875
-        },
-        {
-            "id": "06e27fb4-b9a8-4574-9196-6a98b75d2826",
-            "symbol": "BTC-USD",
-            "price_threshold": 83000.0,
-            "alert_type": "above",
-            "created_at": "2025-03-04T20:02:24.827521",
-            "triggered": true,
-            "triggered_at": "2025-03-04T20:03:00.767041",
-            "triggered_price": 83864.265625
+            "triggered_at": "2025-03-11T21:18:51.768025",
+            "triggered_price": 80892.2265625
         }
     ]
 }
