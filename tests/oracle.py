@@ -32,8 +32,8 @@ logging.basicConfig(
 PRICE_THRESHOLD = 0.03  # 3% threshold from 90-day high
 MAX_RETRIES = 3  # Maximum number of retries for failed downloads
 BATCH_SIZE = 10  # Reduced batch size to avoid rate limiting
-MIN_DELAY = 3  # Minimum delay between batches in seconds
-MAX_DELAY = 5  # Maximum delay between batches in seconds
+MIN_DELAY = 2  # Minimum delay between batches in seconds
+MAX_DELAY = 4  # Maximum delay between batches in seconds
 MIN_PRICE = 5.0  # Minimum stock price
 MAX_PRICE = 100.0  # Maximum stock price
 MIN_MARKET_CAP = 2_000_000_000  # Minimum market cap of $2 billion
